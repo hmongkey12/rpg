@@ -3,11 +3,16 @@
 # Replace RPG starter project with this code when new instructions are live
 import random
 
+#Player class will contain the attack method to reduce enemy life
 class Player:
+    #constructor, initializes player health and command list
     def __init__(self):
        self.life = 100
        self.moves = ["punch", "kick"] 
 
+    #The attack method, takes in the enemy so that the enemy life can be reduced, inventory is used
+    #to check for armor and weapon which can modify user attack and damage mitagation
+    #The move is passed into the method, so the proper attack can be applied
     def attack(self, enemy, move, inventory):
         damage = 0
         if('weapon' in inventory):
@@ -20,6 +25,9 @@ class Player:
         print(f"You {move} {enemy.name} for {damage}")
 
 class Enemy:
+    #Some rooms will have a combat key with a pokemon type value
+    #That type is used to initialize the pokemon since the pokemon will only appear when the player 
+    #enters the room
     def __init__(self, type):
         if(type == "bellsprout"):
             self.name = "bellsprout"
@@ -35,7 +43,9 @@ class Enemy:
             self.moves = ["flame blast", "flamethrower"]
 
 
-
+    #Pokemon attack method, similar to the player attack method
+    #Damage will be random depending on the attack choosen
+    #armor will reduce the attack and will be checked via the inventory
     def attack(self, player, move, inventory):
         damage = 0
         if 'armor' in inventory:
@@ -59,6 +69,8 @@ class Enemy:
         player.life -= damage
         print(f"{self.name} attacked you with {move} for {damage}")
     
+    #The Loot System, whenever the pokemon is defeated, it will drop a random item
+    #and that item will be added automatically to the inventory
     def drop(self, inventory):
         rng = random.randint(1, 2)
         droppedItem = ""
@@ -70,6 +82,8 @@ class Enemy:
         print(f"{self.name} dropped {droppedItem} in your inventory!!!")
 
 
+#the combat function that gets triggered whenever the player enters a room that 
+#has a "Combat" key in it.  This method will keep looping until either the player or the pokemon have no more life.
 def enterCombat(enemy, player, inventory):
     print(f"You have encountered an {enemy.name}")
     while(True):
@@ -111,15 +125,18 @@ def showStatus():
 
 #an inventory, which is initially empty
 inventory = []
+
+#this will be used to check for a win condition, after a pokemon is defeated, the value is set to false
+#which also prevents the pokemon from appearing again when the player reenters the room
 enemiesLeft = {"bellsprout": True, "meowth": True, "charizard": True}
 
-#player
+#Instantiate a player object
 player = Player()
 
 #a dictionary linking a room to other rooms
 ## A dictionary linking a room to other rooms
+### The combat key is added because it will be used to create a pokemon
 rooms = {
-
             'Hall' : {
                   'south' : 'Kitchen',
                   'east'  : 'Dining Room',
@@ -195,22 +212,26 @@ while True:
       #tell them they can't get it
       print('Can\'t get ' + move[1] + '!')
       
-  ## Define how a player can win
+  #If a room has combat in it
   if 'combat' in rooms[currentRoom]:
     enemy = None
+    #The Kitchen will have Meowth, Garden will have a bellsprout, and pantry will have a charizard
     if(currentRoom == "Kitchen" and enemiesLeft['meowth']):
         enemy = Enemy("meowth")    
     elif(currentRoom == "Garden" and enemiesLeft['bellsprout']):
         enemy = Enemy("bellsprout")
     elif(currentRoom == "Pantry" and enemiesLeft['charizard']):
         enemy = Enemy("charizard")
+    #Will enter combat only if the enemy has been created
     if(enemy != None):
         enterCombat(enemy, player, inventory)
+        #losing condition is if the player's life drops below 0
         if(player.life <= 0):
             print("---------------------------")
             print("You have lost the combat... Game Over!!!")
             print("---------------------------")
             break
+        #if enemies life drops below 0, end the combat
         elif(enemy.life <= 0):
             print("---------------------------")
             print(f"You have defeated {enemy.name}")
@@ -218,6 +239,7 @@ while True:
             print("---------------------------")
             player.life += 100
             enemiesLeft[enemy.name] = False
+    #The winning condition is if all pokemon have been defeated 
     if(not enemiesLeft['bellsprout'] and not enemiesLeft['charizard'] and not enemiesLeft['meowth']):
         print("---------------------------")
         print("\nAll pokemon have been brutally beaten to death.  You Win :(\n\nNo Pokemon were harmed in the making of this game.")
